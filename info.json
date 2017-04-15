@@ -1,10 +1,11 @@
 {
-  "name": "ShuttleTrain",
-  "version": "0.0.1",
+  "name": "ShuttleTrain2",
+  "version": "2.0.0",
   "factorio_version": "0.14",
-  "title": "Shuttle Train",
-  "author": "Simwir",
-  "contact": "contact@simwir.dk",
-  "homepage": "https://simwir.dk/category/factorio/shuttle-train/",
+  "title": "Shuttle Train 2",
+  "author": "Nexela, Simwir",
+  "contact": "",
+  "homepage": "",
+  "dependencies": ["? FARL", "? VehiclesEquipement", "? bobvehicleequipment"],
   "description": "Want to get from one end of your big expansive base to the other? Hate running or driving cars? Then why not take the train. With this mod you get a quick and effective way to use your rail infrastructure for personal transportation."
 }

@@ -1,5 +1,3 @@
-require("prototypes.style")
-require("prototypes.item")
-require("prototypes.recipe")
-require("prototypes.entity")
-require("prototypes.technology")
+require("prototypes/style")
+require("prototypes/shuttle-train")
+require("prototypes/controls")
