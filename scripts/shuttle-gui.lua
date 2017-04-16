@@ -53,10 +53,13 @@ gui.build_station_buttons = function(index, filter)
         horizontal_scroll_policy = "never"
     }
     filter = filter or ".*"
-    local _filter = function(station)
-        return station.valid and station.backer_name:lower():find(filter:lower())
-    end
-    for _, station in pairs(table.filter(fdata.stations, _filter)) do
+    local _filter = function(station) return station.valid and station.backer_name:lower():find(filter:lower()) end
+    local _sort = function (a, b) return a.backer_name < b.backer_name end
+
+    local stations = table.filter(fdata.stations, _filter)
+    table.sort(stations, _sort)
+
+    for _, station in pairs(stations) do
         if pdata.favorite_stations[station.unit_number] then
             local table = favorites.add{type = "table", name = "shuttle_train_button_row_"..station.unit_number, colspan = 2}
             table.add{type = "button", name = "shuttle_train_station_button_"..station.unit_number, caption = station.backer_name, style = "shuttle_train_station_button"}
@@ -71,6 +74,7 @@ gui.build_station_buttons = function(index, filter)
         scroll.add{type = "label", name = "shuttle_train_no_stations", caption = {"st-gui.no-stations"}, style = "shuttle_train_left_label_title"}
     end
 end
+--table.sort(global.filtered_stations[player_id], function (a, b) return a.backer_name < b.backer_name end
 
 Gui.on_checked_state_changed("shuttle_train_favorite", function(event)
         global.players[event.player_index].favorite_stations[tonumber(event.element.name:match("%d+"))] = event.element.state or nil
