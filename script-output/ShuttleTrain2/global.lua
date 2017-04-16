@@ -14,27 +14,29 @@
     player = {
       index = "player",
       locomotives = {
-        [28] = {
-          __self = "userdata: 0x0000000058398390"
-        },
-        [29] = {
-          __self = "userdata: 0x0000000057a8f0b0"
+        [36] = {
+          __self = "userdata: 0x0000000013ae20e0"
         }
       },
       stations = {
-        [30] = {
-          __self = "userdata: 0x0000000052d9b940"
+        [37] = {
+          __self = "userdata: 0x0000000013ae2260"
         },
-        [31] = {
-          __self = "userdata: 0x000000005399adf0"
+        [38] = {
+          __self = "userdata: 0x0000000013ae2320"
         }
       }
     }
   },
+  lost_shuttles = {
+    [36] = 5521
+  },
   players = {
     [1] = {
+      favorite_stations = {},
       index = 1,
       name = "Nexela"
     }
-  }
+  },
+  shuttles = {}
 }
