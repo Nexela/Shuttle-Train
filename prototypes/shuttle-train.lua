@@ -11,7 +11,8 @@ local grid = {
     name = "shuttle-train-equipment-grid",
     width = 4,
     height = 2,
-    equipment_categories = {"shuttle-train-equipment"},
+    equipment_categories = {},
+    --insert category in data-final-fixes.lua
 }
 
 local recipe = {
