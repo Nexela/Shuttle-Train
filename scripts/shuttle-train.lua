@@ -5,6 +5,7 @@ local Shuttle = {}
 Shuttle.gui = require("scripts/shuttle-gui")
 
 local Position = require("stdlib/area/position")
+--local Trains = require("stdlib.trains.trains")
 
 -------------------------------------------------------------------------------
 --[[Helpers]]--
@@ -108,11 +109,11 @@ local function call_nearest_shuttle(event)
 
         if closest_shuttle then
             if closest_shuttle.train.state == defines.train_state.wait_station and closest_shuttle.train.schedule.records[1].station == closest_station.backer_name then
-
                 player.print({"shuttle_train.already_at_station", closest_station.backer_name})
             else
                 schedule = schedule or {current = 1, records = {[1] = {time_to_wait = 999, station = closest_station.backer_name}}}
                 player.print({"shuttle-train.sending", closest_shuttle.backer_name, closest_station.backer_name, math.ceil(train_distance)})
+                pdata.last_shuttle = closest_shuttle
                 closest_shuttle.surface.create_entity{
                     name = "flying-text",
                     text = {"shuttle-train.train-enroute", closest_station.backer_name},
@@ -204,7 +205,7 @@ local function enable_shuttle_button(event)
     end
 end
 Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
-Gui.on_click("shuttle_train_top_button", Shuttle.gui.create_left_frame)
+Gui.on_click("shuttle_train_top_button", Shuttle.gui.toggle_left_gui)
 
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
@@ -216,7 +217,7 @@ local function on_player_driving_changed_state(event)
             player.vehicle.train.manual_mode = true
         end
     else
-        Shuttle.gui.destroy_left_frame({player_index = event.player_index})
+        Shuttle.gui.destroy_left_frame(event)
     end
 end
 Event.register(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
@@ -239,6 +240,9 @@ local function death_events(event)
         global.shuttles[event.entity.unit_number] = nil
     elseif event.entity.type == "train-stop" then
         global.forces[event.entity.force.name].stations[event.entity.unit_number] = nil
+        for _, player in pairs(event.entity.force.players) do
+            --update list
+        end
     end
 end
 Event.register(Event.death_events, death_events)
@@ -269,5 +273,4 @@ function Shuttle.init()
     global.shuttles = {}
     global.lost_shuttles = {}
 end
-
 return Shuttle

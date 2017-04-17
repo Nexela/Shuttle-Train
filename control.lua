@@ -22,7 +22,6 @@ local changes = require("changes")
 Event.register(Event.core_events.configuration_changed, changes.on_configuration_changed)
 
 local function on_init()
-    global = {}
     global._changes = changes.on_init(game.active_mods[MOD.name] or MOD.version)
     global.players = Player.init()
     global.forces = Force.init()
