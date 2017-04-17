@@ -12,7 +12,7 @@ for _, loco in pairs(data.raw["locomotive"]) do
     if not loco.equipment_grid then
         loco.equipment_grid = "shuttle-train-equipment-grid"
     end
-    local grid = data.raw["equipment_grid"][loco.equipment_grid]
+    local grid = data.raw["equipment-grid"][loco.equipment_grid]
     if grid then
         if not table.any(grid.equipment_categories, function(v) return v == "shuttle-train-equipment" end) then
             grid.equipment_categories[#grid.equipment_categories+1] = "shuttle-train-equipment"

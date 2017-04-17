@@ -14,6 +14,7 @@ Player.new = function(player_index)
     local obj = {
         index = player_index,
         name = game.players[player_index].name,
+        favorite_stations = {}
     }
     return obj
 end

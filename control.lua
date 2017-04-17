@@ -26,8 +26,8 @@ local function on_init()
     global._changes = changes.on_init(game.active_mods[MOD.name] or MOD.version)
     global.players = Player.init()
     global.forces = Force.init()
-    global.shuttles = Shuttle.init()
-    MOD.log("Init Complete", 2)
+    Shuttle.init()
+    MOD.log("Shuttle Train is now installed", 2)
 end
 Event.register(Event.core_events.init, on_init)
 

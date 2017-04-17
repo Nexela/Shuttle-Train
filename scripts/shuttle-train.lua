@@ -55,10 +55,6 @@ local finished_train_states = {
 --[[Call shuttle]]--
 -------------------------------------------------------------------------------
 local function call_nearest_shuttle(event)
-    --DEVEL
-    global.shuttles = global.shuttles or {}
-    global.lost_shuttles = global.lost_shuttles or {}
-    --DEVEL
     local player, pdata = game.players[event.player_index], global.players[event.player_index]
     local locos = global.forces[player.force.name].locomotives
     --local stations = global.forces[player.force.name].stations
@@ -128,7 +124,9 @@ local function call_nearest_shuttle(event)
                 global.shuttles[closest_shuttle.unit_number] = {
                     player_index = player.index,
                     shuttle = closest_shuttle,
+                    shuttle_name = closest_shuttle.backer_name,
                     station = closest_station,
+                    station_name = closest_station.backer_name,
                     schedule = schedule,
                     scheduled_tick = game.tick
                 }
@@ -140,7 +138,7 @@ local function call_nearest_shuttle(event)
         player.print({"shuttle-train.no-station-found"})
     end
 end
-Gui.on_click("shuttle_train_top_button", call_nearest_shuttle)
+
 script.on_event("shuttle-train-call-nearest", call_nearest_shuttle)
 
 Gui.on_click("shuttle_train_station_button_",
@@ -154,15 +152,14 @@ Gui.on_click("shuttle_train_station_button_",
 
 local function on_train_changed_state(event)
     local train = event.train
-
-    --DEVEL
-    global.shuttles = global.shuttles or {}
-    global.lost_shuttles = global.lost_shuttles or {}
-    --DEVEL
-
     if train.state == (defines.train_state.no_path or defines.train_state.path_lost) and #train.schedule.records == 1 then
         local shuttle = table.find(train.carriages, function(v) return global.shuttles[v.unit_number] end)
         if shuttle then
+            local shuttle_data = global.shuttles[shuttle.unit_number]
+            if shuttle_data then
+                local player = game.players[shuttle_data.player_index] or shuttle.force
+                player.print({"shuttle-train.no-route-retrying", shuttle_data.shuttle_name, shuttle_data.station_name})
+            end
             shuttle.surface.create_entity{
                 name = "flying-text",
                 text = {"shuttle-train.no-route"},
@@ -176,7 +173,7 @@ local function on_train_changed_state(event)
             --Free up the train
             train.manual_mode = true
             global.shuttles[shuttle.unit_number] = nil
-            --Ignore this shuttle for the next 2 seconds.
+            --Ignore this shuttle for the next 60 ticks.
             global.lost_shuttles[shuttle.unit_number] = game.tick + 60
         end
     elseif finished_train_states[train.state] then
@@ -199,26 +196,27 @@ Event.register(defines.events.on_train_changed_state, on_train_changed_state)
 -------------------------------------------------------------------------------
 local function enable_shuttle_button(event)
     if event.player_index and game.players[event.player_index].force.technologies["shuttle-train"].researched then
-        Shuttle.gui.enable_main_button(event.player_index)
+        Shuttle.gui.enable_main_button({player_index = event.player_index})
     elseif event.research and event.research.name == "shuttle-train" then
         for index in pairs(event.research.force.players) do
-            Shuttle.gui.enable_main_button(index)
+            Shuttle.gui.enable_main_button({player_index = index})
         end
     end
 end
 Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
+Gui.on_click("shuttle_train_top_button", Shuttle.gui.create_left_frame)
 
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if player.vehicle and is_shuttle_train(player.vehicle) then
-        Shuttle.gui.create_left_frame(player.index)
+        Shuttle.gui.create_left_frame({player_index = player.index})
         --Shuttle.gui.build_station_buttons(player.index)
         --Set train to manual
         if not global.shuttles[player.vehicle.unit_number] then
             player.vehicle.train.manual_mode = true
         end
     else
-        Shuttle.gui.destroy_left_frame(player.index)
+        Shuttle.gui.destroy_left_frame({player_index = event.player_index})
     end
 end
 Event.register(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
@@ -268,7 +266,8 @@ function Shuttle.init()
             fdata[stop.force.name].stations[stop.unit_number] = stop
         end
     end
-    return {}
+    global.shuttles = {}
+    global.lost_shuttles = {}
 end
 
 return Shuttle

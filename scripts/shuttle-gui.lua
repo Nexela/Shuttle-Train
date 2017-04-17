@@ -1,20 +1,20 @@
 local gui = {}
 
-gui.enable_main_button = function(index)
-    local player = game.players[index]
+gui.enable_main_button = function(event)
+    local player = game.players[event.player_index]
     if not player.gui.top["shuttle_train_top_button"] then
         player.gui.top.add{type="button",name="shuttle_train_top_button", style="shuttle_train_top_button", tooltip={"st-tooltip.top-button"}}
     end
 end
 
-gui.destroy_left_frame = function(index)
-    local player = game.players[index]
+gui.destroy_left_frame = function(event)
+    local player = game.players[event.player_index]
     local left = player.gui.left.shuttle_train_left_frame
     if left then left.destroy() end
 end
 
-gui.create_left_frame = function(index)
-    local player = game.players[index]
+gui.create_left_frame = function(event)
+    local player = game.players[event.player_index]
     local left = player.gui.left.shuttle_train_left_frame
     if not left then
 
@@ -26,17 +26,15 @@ gui.create_left_frame = function(index)
         local frame = left.add{type = "frame", name = "shuttle_train_left_scroll_frame", direction = "vertical", style = "shuttle_train_left_scroll_frame"}
         --frame.add{type = "scroll-pane", name = "shuttle_train_left_scroll_pane", direction = "vertical", style = "shuttle_train_left_scroll_pane", horizontal_scroll_policy = "never"}
 
-        gui.build_station_buttons(index)
+        gui.build_station_buttons({player_index = event.player_index})
     end
     return left
 end
 
-gui.build_station_buttons = function(index, filter)
-    local player, pdata = game.players[index], global.players[index]
-    --DEVEL
-    pdata.favorite_stations = pdata.favorite_stations or {}
+gui.build_station_buttons = function(event)
+    local player, pdata = game.players[event.player_index], global.players[event.player_index]
     local fdata = global.forces[player.force.name]
-    local frame = gui.create_left_frame(index)["shuttle_train_left_scroll_frame"]
+    local frame = gui.create_left_frame({player_index = event.player_index})["shuttle_train_left_scroll_frame"]
     table.each(frame.children_names, function(v) frame[v].destroy() end)
     local favorites = frame.add{
         type = "scroll-pane",
@@ -52,7 +50,7 @@ gui.build_station_buttons = function(index, filter)
         style = "shuttle_train_left_scroll_pane",
         horizontal_scroll_policy = "never"
     }
-    filter = filter or ".*"
+    local filter = event.filter or (event.element and event.element.name == "shuttle_train_left_filter_textfield" and event.element.textfield) or ".*"
     local _filter = function(station) return station.valid and station.backer_name:lower():find(filter:lower()) end
     local _sort = function (a, b) return a.backer_name < b.backer_name end
 
@@ -74,11 +72,10 @@ gui.build_station_buttons = function(index, filter)
         scroll.add{type = "label", name = "shuttle_train_no_stations", caption = {"st-gui.no-stations"}, style = "shuttle_train_left_label_title"}
     end
 end
---table.sort(global.filtered_stations[player_id], function (a, b) return a.backer_name < b.backer_name end
 
 Gui.on_checked_state_changed("shuttle_train_favorite", function(event)
         global.players[event.player_index].favorite_stations[tonumber(event.element.name:match("%d+"))] = event.element.state or nil
     end)
 
-Gui.on_text_changed("shuttle_train_left_filter_textfield", function(event) gui.build_station_buttons(event.player_index, event.element.text) end)
+Gui.on_text_changed("shuttle_train_left_filter_textfield", gui.build_station_buttons)
 return gui
