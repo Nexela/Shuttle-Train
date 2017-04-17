@@ -13,9 +13,6 @@ MOD.log = require("stdlib.debug.debug")
 Event.death_events = {defines.events.on_entity_died, defines.events.on_preplayer_mined_item, defines.events.on_robot_pre_mined}
 Event.build_events = {defines.events.on_built_entity, defines.events.on_robot_built_entity}
 
-local Player = require("stdlib/player")
-local Force = require("stdlib/force")
-
 local Shuttle = require("scripts/shuttle-train")
 
 local changes = require("changes")
@@ -23,8 +20,6 @@ Event.register(Event.core_events.configuration_changed, changes.on_configuration
 
 local function on_init()
     global._changes = changes.on_init(game.active_mods[MOD.name] or MOD.version)
-    global.players = Player.init()
-    global.forces = Force.init()
     Shuttle.init()
     MOD.log("Shuttle Train is now installed", 2)
 end

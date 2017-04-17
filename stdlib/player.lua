@@ -10,11 +10,15 @@ Player.get_object_and_data = function (index)
     end
 end
 
+function Player.test(test)
+end
+
 Player.new = function(player_index)
     local obj = {
         index = player_index,
         name = game.players[player_index].name,
-        favorite_stations = {}
+        favorite_stations = {},
+        favorite_shuttles = {}
     }
     return obj
 end
@@ -36,7 +40,7 @@ Player.init = function(player_index, overwrite)
     return pdata
 end
 
-local on_player_created = function(event)
+Player.on_player_created = function(event)
     Player.init(event.player_index)
     if global._mess_queue then
         for _, msg in pairs(global._mess_queue) do
@@ -45,6 +49,5 @@ local on_player_created = function(event)
     end
     global._mess_queue = nil
 end
-Event.register(defines.events.on_player_created, on_player_created)
 
 return Player

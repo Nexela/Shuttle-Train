@@ -4,6 +4,8 @@
 local Shuttle = {}
 Shuttle.gui = require("scripts/shuttle-gui")
 
+local Player = require("stdlib/player")
+local Force = require("stdlib/force")
 local Position = require("stdlib/area/position")
 --local Trains = require("stdlib.trains.trains")
 
@@ -141,11 +143,9 @@ local function call_nearest_shuttle(event)
 end
 
 script.on_event("shuttle-train-call-nearest", call_nearest_shuttle)
-
 Gui.on_click("shuttle_train_station_button_",
     function(event)
         local player = game.players[event.player_index]
-
         event.station = global.forces[player.force.name].stations[tonumber(event.element.name:match("%d+"))]
         call_nearest_shuttle(event)
     end
@@ -205,13 +205,11 @@ local function enable_shuttle_button(event)
     end
 end
 Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
-Gui.on_click("shuttle_train_top_button", Shuttle.gui.toggle_left_gui)
 
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if player.vehicle and is_shuttle_train(player.vehicle) then
-        Shuttle.gui.create_left_frame({player_index = player.index})
-        --Shuttle.gui.build_station_buttons(player.index)
+        Shuttle.gui.get_or_create_left_frame({player_index = player.index})
         --Set train to manual
         if not global.shuttles[player.vehicle.unit_number] then
             player.vehicle.train.manual_mode = true
@@ -238,11 +236,14 @@ local function death_events(event)
     if event.entity.type == "locomotive" then
         global.forces[event.entity.force.name].locomotives[event.entity.unit_number] = nil
         global.shuttles[event.entity.unit_number] = nil
+        event.shuttle_force = event.entity.force
+        event.list = "shuttles"
+        --Shuttle.gui.update_lists(event)
     elseif event.entity.type == "train-stop" then
         global.forces[event.entity.force.name].stations[event.entity.unit_number] = nil
-        for _, player in pairs(event.entity.force.players) do
-            --update list
-        end
+        event.shuttle_force = event.entity.force
+        event.list = "stations"
+        --Shuttle.gui.update_lists(event)
     end
 end
 Event.register(Event.death_events, death_events)
@@ -251,11 +252,19 @@ local function build_events(event)
     local entity = event.created_entity
     if entity.type == "locomotive" then
         global.forces[entity.force.name].locomotives[entity.unit_number] = entity
+        event.shuttle_force = event.created_entity.force
+        event.list = "shuttles"
+        --Shuttle.gui.update_lists(event)
     elseif entity.type == "train-stop" then
         global.forces[entity.force.name].stations[entity.unit_number] = entity
+        event.list = "stations"
+        event.shuttle_force = event.created_entity.force
+        --Shuttle.gui.update_lists(event)
     end
 end
 Event.register(Event.build_events, build_events)
+
+Event.register(defines.events.on_player_created, Player.on_player_created)
 
 -------------------------------------------------------------------------------
 --[[Init]]--
@@ -270,6 +279,8 @@ function Shuttle.init()
             fdata[stop.force.name].stations[stop.unit_number] = stop
         end
     end
+    global.players = Player.init()
+    global.forces = Force.init()
     global.shuttles = {}
     global.lost_shuttles = {}
 end
