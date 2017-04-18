@@ -21,6 +21,8 @@ data:extend(
 -------------------------------------------------------------------------------
 --[[TOP FRAME]]--
 -------------------------------------------------------------------------------
+--shuttle_train_top_button
+
 data.raw["gui-style"].default["shuttle_train_top_button"] = {
     type = "button_style",
     parent = "button_style",
@@ -79,12 +81,16 @@ data.raw["gui-style"].default["shuttle_train_top_button"] = {
 -------------------------------------------------------------------------------
 --[[LEFT FRAME]]--
 -------------------------------------------------------------------------------
+--shuttle_train_left_frame
+--shuttle_train_left_label_title
+--shuttle_train_left_label_simple_text
+--shuttle_train_left_header_filter
 data.raw["gui-style"].default["shuttle_train_left_frame"] =
 {
     type = "frame_style",
     parent = "frame_style",
-    maximal_width = 250,
-    minimal_width = 150,
+    maximal_width = 220,
+    minimal_width = 200,
     right_padding = 0,
     left_padding = 0,
     bottom_padding = 0,
@@ -117,9 +123,8 @@ data.raw["gui-style"].default["shuttle_train_left_header_filter"] =
     type = "textfield_style",
     left_padding = 5,
     right_padding = 5,
-    minimal_width = 220,
+    minimal_width = 200,
     --maximal_width = 185,
-    resize_row_to_width = true,
     font = "shuttle-train-font",
     font_color = {},
     graphical_set =
@@ -136,6 +141,8 @@ data.raw["gui-style"].default["shuttle_train_left_header_filter"] =
 -------------------------------------------------------------------------------
 --[[Station List]]--
 -------------------------------------------------------------------------------
+--shuttle_train_left_container
+--shuttle_train_left_container_frame
 data.raw["gui-style"].default["shuttle_train_left_container"] =
 {
     type = "table_style",
@@ -149,41 +156,41 @@ data.raw["gui-style"].default["shuttle_train_left_container"] =
     left_padding = 0,
 }
 
-data.raw["gui-style"].default["shuttle_train_station_list_scroll_frame"] =
+data.raw["gui-style"].default["shuttle_train_left_container_frame"] =
 {
     type = "frame_style",
     parent = "frame_style",
-    --minimal_width = 185,
-    --maximal_width = 185,
+    minimal_width = 190,
     right_padding = 0,
     left_padding = 0,
-    bottom_padding = 0,
+    bottom_padding = 5,
 }
 
-data.raw["gui-style"].default["shuttle_train_station_list_scroll_pane"] =
+data.raw["gui-style"].default["shuttle_train_left_container_scroll"] =
 {
     type = "scroll_pane_style",
     parent = "scroll_pane_style",
+    minimal_height = 0,
     maximal_height = 300,
     top_padding = 0,
     right_padding = 0,
     bottom_padding = 0,
     left_padding = 0,
-    --minimal_width = 178,
-    --maximal_width = 178,
 }
-data.raw["gui-style"].default["shuttle_train_station_list_scroll_pane_favorites"] =
+data.raw["gui-style"].default["shuttle_train_left_container_scroll_favorites"] =
 {
     type="scroll_pane_style",
-    parent = "shuttle_train_station_list_scroll_pane",
-    maximal_height = 90
+    parent = "shuttle_train_left_container_scroll",
+    maximal_height = 90,
+    minamal_height = 90
 }
 
-data.raw["gui-style"].default["shuttle_train_station_list_scroll_pane_stations"] =
+data.raw["gui-style"].default["shuttle_train_left_container_scroll_stations"] =
 {
     type="scroll_pane_style",
-    parent = "shuttle_train_station_list_scroll_pane",
+    parent = "shuttle_train_left_container_scroll",
     maximal_height = 215,
+    minimal_height = 215,
 }
 
 data.raw["gui-style"].default["shuttle_train_button_row"] =
@@ -199,7 +206,7 @@ data.raw["gui-style"].default["shuttle_train_button_row"] =
     left_padding = 0,
 }
 
-data.raw["gui-style"].default["shuttle_train_station_button"] =
+data.raw["gui-style"].default["shuttle_train_list_button"] =
 {
     type = "button_style",
     parent = "button_style",

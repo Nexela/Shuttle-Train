@@ -5,20 +5,15 @@ require("stdlib/event/event")
 local Player = {}
 
 Player.get_object_and_data = function (index)
-    if game.players[index] then
+    if game.players[index or 0] then
         return game.players[index], global.players[index]
     end
-end
-
-function Player.test(test)
 end
 
 Player.new = function(player_index)
     local obj = {
         index = player_index,
         name = game.players[player_index].name,
-        favorite_stations = {},
-        favorite_shuttles = {}
     }
     return obj
 end
