@@ -5,7 +5,7 @@ require("stdlib/event/event")
 local Player = {}
 
 Player.get_object_and_data = function (index)
-    if game.players[index or 0] then
+    if game.players[index] then
         return game.players[index], global.players[index]
     end
 end
@@ -18,12 +18,18 @@ Player.new = function(player_index)
     return obj
 end
 
-Player.init = function(player_index, overwrite)
+Player.add_data_all = function(data)
+    local pdata = global.players
+    table.each(pdata, function(v) table.merge(v, table.deepcopy(data)) end)
+end
+
+Player.init = function(event, overwrite)
+    global.players = global.players or {}
     local pdata = global.players or {}
-    if player_index then
-        if not game.players[player_index] then error("Invalid Player") end
-        if not pdata[player_index] or (pdata[player_index] and overwrite) then
-            pdata[player_index] = Player.new(player_index)
+    if event and event.player_index then
+        if not game.players[event.player_index] then error("Invalid Player") end
+        if not pdata[event.player_index] or (pdata[event.player_index] and overwrite) then
+            pdata[event.player_index] = Player.new(event.player_index)
         end
     else
         for index in pairs(game.players) do
@@ -32,17 +38,14 @@ Player.init = function(player_index, overwrite)
             end
         end
     end
-    return pdata
-end
-
-Player.on_player_created = function(event)
-    Player.init(event.player_index)
     if global._mess_queue then
         for _, msg in pairs(global._mess_queue) do
             game.print(msg)
         end
     end
     global._mess_queue = nil
+    return pdata
 end
+Event.register(defines.events.on_player_created, Player.init)
 
 return Player

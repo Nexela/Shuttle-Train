@@ -188,7 +188,6 @@ gui.remove_list_row = function(pdata, unit_number)
     end
 end
 
-Event.call_shuttle = script.generate_event_name()
 Gui.on_click("shuttle_train_station_button_",
     function(event)
         local player = game.players[event.player_index]
