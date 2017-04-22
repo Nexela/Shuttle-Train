@@ -1,27 +1,28 @@
 -------------------------------------------------------------------------------
 --[[Force]]
 -------------------------------------------------------------------------------
+require("stdlib/event/event")
 local Force = {}
 
-Force.get_object_and_data = function (name)
+function Force.get_object_and_data(name)
     if game.forces[name] then
         return game.forces[name], global.forces[name]
     end
 end
 
-Force.new = function(force_name)
+function Force.new(force_name)
     local obj = {
         index = force_name,
     }
     return obj
 end
 
-Force.add_data_all = function(data)
+function Force.add_data_all(data)
     local fdata = global.forces
     table.each(fdata, function(v) table.merge(v, table.deepcopy(data)) end)
 end
 
-Force.init = function(event, overwrite)
+function Force.init(event, overwrite)
     global.forces = global.forces or {}
     local fdata = global.forces or {}
     if event and event.force.name then
@@ -35,11 +36,10 @@ Force.init = function(event, overwrite)
             end
         end
     end
-    return fdata
 end
 Event.register(defines.events.on_force_created, function(event) Force.init(event.force.name) end)
 
-Force.merge = function()
+function Force.merge()
 end
 Event.register(defines.events.on_forces_merging, Force.merge)
 

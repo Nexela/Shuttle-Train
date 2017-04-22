@@ -44,7 +44,7 @@ end
 gui.toggle_left_gui = function(event)
     gui.get_or_create_left_flow(event).style.visible = not gui.get_or_create_left_flow(event).style.visible
 end
-
+Gui.on_click("shuttle_train_top_button", gui.toggle_left_gui)
 -------------------------------------------------------------------------------
 --[[Left Frame Main]]--
 -------------------------------------------------------------------------------
@@ -54,6 +54,9 @@ gui.destroy_left_frame = function(event)
 end
 
 gui.get_or_create_left_flow = function(event)
+    --[[
+    pdata.gui["container-type"]["container-gui-obj"]
+    ]]
     local player, pdata = Player.get_object_and_data(event.player_index)
     local fdata = global.forces[player.force.name]
     local left = get_left_gui(player)
@@ -88,13 +91,31 @@ gui.get_or_create_left_flow = function(event)
         pdata.favorite_stations = {}
         pdata.favorite_shuttles = {}
 
-        --Hide empty favorites
+        --Hide empties
         pdata.gui.stations.fav.style.visible = false
+        pdata.gui.stations.fav_scroll.parent.style.visible = false
+        pdata.gui.stations.reg_scroll.parent.style.visible = #pdata.gui.stations.reg_scroll.children_names > 0
+
+        pdata.gui.shuttles.fav.style.visible = false
+        pdata.gui.shuttles.fav_scroll.parent.style.visible = false
+        pdata.gui.shuttles.reg_scroll.parent.style.visible = #pdata.gui.stations.reg_scroll.children_names > 0
 
         --Populate existing stations
         table.each(fdata.stations,
             function(station)
                 gui.add_list_row(pdata.gui.stations["reg_scroll"], station.unit_number, station.backer_name, false)
+            end
+        )
+        local function _is_shuttle(locomotive)
+            if locomotive and locomotive.grid then
+                return table.find(locomotive.grid.equipment, function(v) return v.name == "shuttle-train-equipment" end)
+            end
+        end
+        table.each(fdata.locomotives,
+            function(loco)
+                if _is_shuttle(loco) then
+                    gui.add_list_row(pdata.gui.shuttles["reg_scroll"], loco.unit_number, loco.backer_name, false)
+                end
             end
         )
     end
@@ -110,6 +131,7 @@ gui._create_list_container = function(frame, name, pdata)
         type = "table",
         name = "shuttle_train_left_container_"..name,
         style = "shuttle_train_left_container",
+        caption = name,
         colspan = 1
     }
 
@@ -125,7 +147,7 @@ gui._create_list_tables = function (container, name, locale)
     local list_table = container.add{
         type = "table",
         name = container.name.."_list_header_table_"..name,
-        style = "shuttle_train_button_row",
+        style = "shuttle_train_left_container_table",
         colspan = 1
     }
     list_table.add{
@@ -146,7 +168,8 @@ gui._create_list_tables = function (container, name, locale)
         direction = "vertical",
         style = "shuttle_train_left_container_scroll_"..name,
         horizontal_scroll_policy = "never",
-        vertical_scroll_policy = "always"
+        --vertical_scroll_policy = "always",
+        caption = name
     }
     return list_table, scroll
 end
@@ -170,6 +193,11 @@ gui.add_list_row = function(scroll, unit_num, backer_name, state)
         name = "shuttle_train_favorite_station_"..unit_num,
         state = state
     }
+    row.style.visible = backer_name:lower():find(global.players[scroll.player_index].gui.filter.text:lower()) or false
+    scroll.parent.style.visible = #scroll.children_names > 0 and row.style.visible or scroll.parent.style.visible
+    if scroll.caption == "favorites" then
+        scroll.parent.parent.style.visible = scroll.parent.style.visible
+    end
     return row
 end
 
@@ -180,7 +208,15 @@ gui.remove_list_row = function(pdata, unit_number)
                 if name:find("%_scroll") then
                     if scroll.valid then
                         local tab = scroll["shuttle_train_button_row_"..unit_number]
-                        local _ = tab and tab.destroy()
+                        if tab then
+                            tab.destroy()
+                            if #scroll.children_names == 0 then
+                                scroll.parent.style.visible = false
+                                if scroll.caption == "favorites" then
+                                    scroll.parent.parent.style.visible = false
+                                end
+                            end
+                        end
                     end
                 end
             end
@@ -204,19 +240,25 @@ Gui.on_click("shuttle_train_station_button_",
     end
 )
 
--- Gui.on_checked_state_changed("shuttle_train_favorite_station_",
--- function(event)
--- local player, pdata = Player.get_object_and_data(event.player_index)
--- pdata.favorite_stations[tonumber(event.element.name:match("%d+"))] = event.element.state or nil
--- end
--- )
--- Gui.on_checked_state_changed("shuttle_train_favorite_shuttle_",
--- function(event)
--- local player, pdata = Player.get_object_and_data(event.player_index)
--- pdata.favorite_shuttles[tonumber(event.element.name:match("%d+"))] = event.element.state or nil
--- end
--- )
---
+--Get reg/favorite delete and add
+Gui.on_checked_state_changed("shuttle_train_favorite_station_",
+    function(event)
+        local _, pdata = Player.get_object_and_data(event.player_index)
+
+        --Get container table caption
+        local type = event.element.parent.parent.parent.parent.parent.caption
+        local unit_number = event.element.name:match("%d+")
+        local backer_name = event.element.parent.caption
+        local state = event.element.state
+
+        local add_to_scroll = pdata.gui[type][state and "fav_scroll" or "reg_scroll"]
+
+        gui.remove_list_row(pdata, unit_number)
+
+        gui.add_list_row(add_to_scroll, unit_number, backer_name, state)
+    end
+)
+
 Gui.on_text_changed("shuttle_train_left_header_filter",
     function(event)
         local player, pdata = Player.get_object_and_data(event.player_index)
@@ -255,7 +297,5 @@ Gui.on_text_changed("shuttle_train_left_header_filter",
         end
     end
 )
-
-Gui.on_click("shuttle_train_top_button", gui.toggle_left_gui)
 
 return gui

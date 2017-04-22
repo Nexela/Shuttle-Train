@@ -197,7 +197,7 @@ Event.register(defines.events.on_train_changed_state, on_train_changed_state)
 -------------------------------------------------------------------------------
 local function enable_shuttle_button(event)
     --Shuttle.gui.toggle_left_gui(event)
-    if event.player_index then
+    if event.name == defines.events.on_player_created and event.player_index then
         Shuttle.gui.get_or_create_left_flow(event).style.visible = false
         if game.players[event.player_index].force.technologies["shuttle-train"].researched then
             Shuttle.gui.enable_main_button(event)
@@ -208,6 +208,7 @@ local function enable_shuttle_button(event)
         end
     end
 end
+---
 Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
 
 local function on_player_driving_changed_state(event)
@@ -281,11 +282,6 @@ Event.register(Event.build_events, build_events)
 -------------------------------------------------------------------------------
 --[[Init]]--
 -------------------------------------------------------------------------------
--- Event.register(defines.events.on_player_created,
--- function(event)
--- Shuttle.gui.get_or_create_left_flow(event).style.visible = false
--- end
--- )
 function Shuttle.migrate()
     local fdata = global.forces
     for _, surface in pairs(game.surfaces) do

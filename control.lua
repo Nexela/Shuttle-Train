@@ -24,8 +24,8 @@ Event.register(Event.core_events.configuration_changed, changes.on_configuration
 
 local function on_init()
     global._changes = changes.on_init(game.active_mods[MOD.name] or MOD.version)
-    global.players = Player.init()
-    global.forces = Force.init()
+    Player.init()
+    Force.init()
     Shuttle.init()
     MOD.log("Shuttle Train V2 is now installed", 2)
 end

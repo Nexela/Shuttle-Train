@@ -148,7 +148,20 @@ data.raw["gui-style"].default["shuttle_train_left_container"] =
     type = "table_style",
     parent = "table_style",
     vertical_spacing = 0,
-    horizontal_spacing = 5,
+    horizontal_spacing = 0,
+    cell_spacing = 0,
+    top_padding = 0,
+    right_padding = 0,
+    bottom_padding = 0,
+    left_padding = 0,
+}
+
+data.raw["gui-style"].default["shuttle_train_left_container_table"] =
+{
+    type = "table_style",
+    parent = "table_style",
+    vertical_spacing = 0,
+    horizontal_spacing = 0,
     cell_spacing = 0,
     top_padding = 0,
     right_padding = 0,
@@ -163,7 +176,7 @@ data.raw["gui-style"].default["shuttle_train_left_container_frame"] =
     minimal_width = 190,
     right_padding = 0,
     left_padding = 0,
-    bottom_padding = 5,
+    bottom_padding = 0,
 }
 
 data.raw["gui-style"].default["shuttle_train_left_container_scroll"] =
@@ -182,7 +195,7 @@ data.raw["gui-style"].default["shuttle_train_left_container_scroll_favorites"] =
     type="scroll_pane_style",
     parent = "shuttle_train_left_container_scroll",
     maximal_height = 90,
-    minamal_height = 90
+    minimal_height = 0
 }
 
 data.raw["gui-style"].default["shuttle_train_left_container_scroll_stations"] =
@@ -190,7 +203,7 @@ data.raw["gui-style"].default["shuttle_train_left_container_scroll_stations"] =
     type="scroll_pane_style",
     parent = "shuttle_train_left_container_scroll",
     maximal_height = 215,
-    minimal_height = 215,
+    minimal_height = 0,
 }
 
 data.raw["gui-style"].default["shuttle_train_button_row"] =

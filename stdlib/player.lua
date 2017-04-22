@@ -4,13 +4,13 @@
 require("stdlib/event/event")
 local Player = {}
 
-Player.get_object_and_data = function (index)
+function Player.get_object_and_data(index)
     if game.players[index] then
         return game.players[index], global.players[index]
     end
 end
 
-Player.new = function(player_index)
+function Player.new(player_index)
     local obj = {
         index = player_index,
         name = game.players[player_index].name,
@@ -18,12 +18,12 @@ Player.new = function(player_index)
     return obj
 end
 
-Player.add_data_all = function(data)
+function Player.add_data_all(data)
     local pdata = global.players
     table.each(pdata, function(v) table.merge(v, table.deepcopy(data)) end)
 end
 
-Player.init = function(event, overwrite)
+function Player.init(event, overwrite)
     global.players = global.players or {}
     local pdata = global.players or {}
     if event and event.player_index then
@@ -44,7 +44,6 @@ Player.init = function(event, overwrite)
         end
     end
     global._mess_queue = nil
-    return pdata
 end
 Event.register(defines.events.on_player_created, Player.init)
 
