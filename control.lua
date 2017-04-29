@@ -9,27 +9,22 @@ MOD.version = "2.0.0"
 MOD.logfile = Logger.new(MOD.fullname, "log", MOD.config.DEBUG or false, {log_ticks = true, file_extension = "lua"})
 MOD.logfile.file_name = MOD.logfile.file_name:gsub("logs/", "", 1)
 MOD.log = require("stdlib.debug.debug")
-
-Event.death_events = {defines.events.on_entity_died, defines.events.on_preplayer_mined_item, defines.events.on_robot_pre_mined}
-Event.build_events = {defines.events.on_built_entity, defines.events.on_robot_built_entity}
-Event.call_shuttle = script.generate_event_name()
+MOD.interface = require("interface")
 
 local Player = require("stdlib/player")
 local Force = require("stdlib/force")
 
-local Shuttle = require("scripts/shuttle-train")
-
-local changes = require("changes")
-Event.register(Event.core_events.configuration_changed, changes.on_configuration_changed)
+local Changes = require("changes")
+Event.register(Event.core_events.configuration_changed, Changes.on_configuration_changed)
 
 local function on_init()
-    global._changes = changes.on_init(game.active_mods[MOD.name] or MOD.version)
+    global._changes = Changes.on_init(game.active_mods[MOD.name] or "0.0.0")
     Player.init()
     Force.init()
-    Shuttle.init()
-    MOD.log("Shuttle Train V2 is now installed", 2)
 end
 Event.register(Event.core_events.init, on_init)
 
-local interface = require("interface")
+require("scripts/shuttle-train")
+
+local interface = MOD.interface
 remote.add_interface(MOD.if_name, interface)
