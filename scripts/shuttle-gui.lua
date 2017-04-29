@@ -6,30 +6,84 @@ local get_left_gui = function(player)
     return player.gui.left["shuttle_train_left_flow"]
 end
 
--- local get_filter = function (player)
--- return get_left_gui(player)["shuttle_train_left_header_table"]["shuttle_train_left_header_filter"].text
--- end
---
--- local sort_favorites = function(pdata, tab, surface, filter)
--- local fav, reg = {}, {}
--- local _filter = function(station) return station.valid and station.backer_name:lower():find(filter) end
---
--- local _sort = function (a, b) return a.backer_name < b.backer_name end
---
--- for _, ent in pairs(tab) do
--- --if ent.valid and ent.backer_name:lower():find(filter) then
--- if ent.valid and ent.surface == surface and ent.backer_name:lower():find(filter) then
--- if pdata.favorite_stations[ent.unit_number] then
--- fav[#fav+1] = ent
--- else
--- reg[#reg+1] = ent
--- end
--- end
--- end
--- sort(fav, _sort)
--- sort(reg, _sort)
--- return fav, reg
--- end
+--[[
+local function on_player_driving_changed_state(event)
+    local player = game.players[event.player_index]
+    if player.vehicle and is_shuttle_train(player.vehicle) then
+        --Shuttle.gui.get_or_create_left_flow(event).style.visible = true
+        --Set train to manual
+        if not global.shuttles[player.vehicle.unit_number] then
+            player.vehicle.train.manual_mode = true
+        end
+    else
+        --Shuttle.gui.get_or_create_left_flow(event).style.visible = false
+        --Shuttle.gui.destroy_left_frame(event)
+    end
+end
+Event.register(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
+
+local function death_events(event)
+    local entity = event.entity
+    if entity.type == "locomotive" then
+        global.forces[entity.force.name].locomotives[entity.unit_number] = nil
+        global.shuttles[entity.unit_number] = nil
+        table.each(entity.force.players,
+            function(p)
+                Shuttle.gui.remove_list_row(global.players[p.index], entity.unit_number)
+            end
+        )
+    elseif event.entity.type == "train-stop" then
+        global.forces[entity.force.name].stations[entity.unit_number] = nil
+        table.each(entity.force.players,
+            function(p)
+                Shuttle.gui.remove_list_row(global.players[p.index], entity.unit_number)
+            end
+        )
+    end
+end
+Event.register(Event.death_events, death_events)
+
+local function build_events(event)
+    local entity = event.created_entity
+    if entity.type == "locomotive" then
+        global.forces[entity.force.name].locomotives[entity.unit_number] = entity
+    elseif entity.type == "train-stop" then
+        global.forces[entity.force.name].stations[entity.unit_number] = entity
+        table.each(entity.force.players,
+            function(p)
+                local filter = global.players[p.index].gui.filter.text:lower()
+                local scroll = global.players[p.index].gui.stations.reg_scroll
+                if scroll and scroll.valid then
+                    local row = Shuttle.gui.add_list_row(scroll, entity.unit_number, entity.backer_name, false)
+                    row.style.visible = row.caption:lower():find(filter) and true or false
+                end
+            end
+        )
+    end
+end
+Event.register(Event.build_events, build_events)
+
+--init
+table.each(game.players, function(v) enable_shuttle_button({player_index=v.index}) end)
+--]]
+-------------------------------------------------------------------------------
+--[[Spawn GUI]]--
+-------------------------------------------------------------------------------
+local function enable_shuttle_button(event)
+    --gui.toggle_left_gui(event)
+    if event.name == defines.events.on_player_created and event.player_index then
+        gui.get_or_create_left_flow(event).style.visible = false
+        if game.players[event.player_index].force.technologies["shuttle-train"].researched then
+            gui.enable_main_button(event)
+        end
+    elseif event.research and event.research.name == "shuttle-train" then
+        for index in pairs(event.research.force.players) do
+            gui.enable_main_button({player_index = index})
+        end
+    end
+end
+---
+Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
 
 -------------------------------------------------------------------------------
 --[[Top Button]]--

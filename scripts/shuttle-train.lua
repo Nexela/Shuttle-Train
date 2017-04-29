@@ -2,7 +2,7 @@
 --[[Shuttle Trains]]--
 -------------------------------------------------------------------------------
 local Shuttle = {}
-Shuttle.gui = require("scripts/shuttle-gui")
+--Shuttle.gui = require("scripts/shuttle-gui")
 
 local Player = require("stdlib/player")
 local Force = require("stdlib/force")
@@ -23,16 +23,16 @@ end
 --return object carriage if shuttle
 local function is_shuttle(locomotive)
     if locomotive and locomotive.grid then
-        return table.find(locomotive.grid.equipment, function(v) return v.name == "shuttle-train-equipment" end)
+        return locomotive.grid.get_contents()["shuttle-train-equipment"]
     end
 end
 
 --return object carriage if shuttle, checks all carriages
-local function is_shuttle_train(locomotive)
-    if locomotive then
-        local train = get_train(locomotive)
-        return train and table.find(train.carriages, is_shuttle)
+local function is_shuttle_train(train, train_is_loco)
+    if train_is_loco then
+        train = get_train(train)
     end
+    return train and table.find(train.carriages, is_shuttle)
 end
 
 -- Return a table of all passengers on a train, or nil if no passengers
@@ -60,7 +60,8 @@ local finished_train_states = {
 -------------------------------------------------------------------------------
 local function call_nearest_shuttle(event)
     local player, pdata = Player.get_object_and_data(event.player_index)
-    local locos = global.forces[player.force.name].locomotives
+    --local locos = global.forces[player.force.name].locomotives
+    local trains = player.surface.get_trains(player.force)
     --local stations = global.forces[player.force.name].stations
 
     local closest_station = event.station and event.station.valid and event.station
@@ -94,7 +95,7 @@ local function call_nearest_shuttle(event)
     if closest_station then
 
         if not closest_shuttle then
-            if player.vehicle and is_shuttle_train(player.vehicle) then
+            if player.vehicle and is_shuttle_train(player.vehicle, true) then
                 closest_shuttle = player.vehicle
                 train_distance = Position.distance(closest_station.position, player.vehicle.position)
             else
@@ -193,35 +194,16 @@ end
 Event.register(defines.events.on_train_changed_state, on_train_changed_state)
 
 -------------------------------------------------------------------------------
---[[Spawn GUIs]]--
+--[[Stuffs]]--
 -------------------------------------------------------------------------------
-local function enable_shuttle_button(event)
-    --Shuttle.gui.toggle_left_gui(event)
-    if event.name == defines.events.on_player_created and event.player_index then
-        Shuttle.gui.get_or_create_left_flow(event).style.visible = false
-        if game.players[event.player_index].force.technologies["shuttle-train"].researched then
-            Shuttle.gui.enable_main_button(event)
-        end
-    elseif event.research and event.research.name == "shuttle-train" then
-        for index in pairs(event.research.force.players) do
-            Shuttle.gui.enable_main_button({player_index = index})
-        end
-    end
-end
----
-Event.register({defines.events.on_research_finished, defines.events.on_player_created}, enable_shuttle_button)
 
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if player.vehicle and is_shuttle_train(player.vehicle) then
-        Shuttle.gui.get_or_create_left_flow(event).style.visible = true
         --Set train to manual
         if not global.shuttles[player.vehicle.unit_number] then
             player.vehicle.train.manual_mode = true
         end
-    else
-        Shuttle.gui.get_or_create_left_flow(event).style.visible = false
-        --Shuttle.gui.destroy_left_frame(event)
     end
 end
 Event.register(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
@@ -241,40 +223,20 @@ Event.register(defines.events.on_player_placed_equipment, on_player_placed_equip
 local function death_events(event)
     local entity = event.entity
     if entity.type == "locomotive" then
-        global.forces[entity.force.name].locomotives[entity.unit_number] = nil
+        --global.forces[entity.force.name].locomotives[entity.unit_number] = nil
         global.shuttles[entity.unit_number] = nil
-        table.each(entity.force.players,
-            function(p)
-                Shuttle.gui.remove_list_row(global.players[p.index], entity.unit_number)
-            end
-        )
     elseif event.entity.type == "train-stop" then
         global.forces[entity.force.name].stations[entity.unit_number] = nil
-        table.each(entity.force.players,
-            function(p)
-                Shuttle.gui.remove_list_row(global.players[p.index], entity.unit_number)
-            end
-        )
     end
 end
 Event.register(Event.death_events, death_events)
 
 local function build_events(event)
     local entity = event.created_entity
-    if entity.type == "locomotive" then
-        global.forces[entity.force.name].locomotives[entity.unit_number] = entity
-    elseif entity.type == "train-stop" then
+    -- if entity.type == "locomotive" then
+    -- global.forces[entity.force.name].locomotives[entity.unit_number] = entity
+    if entity.type == "train-stop" then
         global.forces[entity.force.name].stations[entity.unit_number] = entity
-        table.each(entity.force.players,
-            function(p)
-                local filter = global.players[p.index].gui.filter.text:lower()
-                local scroll = global.players[p.index].gui.stations.reg_scroll
-                if scroll and scroll.valid then
-                    local row = Shuttle.gui.add_list_row(scroll, entity.unit_number, entity.backer_name, false)
-                    row.style.visible = row.caption:lower():find(filter) and true or false
-                end
-            end
-        )
     end
 end
 Event.register(Event.build_events, build_events)
@@ -285,10 +247,9 @@ Event.register(Event.build_events, build_events)
 function Shuttle.migrate()
     local fdata = global.forces
     for _, surface in pairs(game.surfaces) do
-        for _, loco in pairs(surface.find_entities_filtered{type="locomotive"}) do
-            fdata[loco.force.name].locomotives[loco.unit_number] = loco
-            log(loco.force.name)
-        end
+        -- for _, loco in pairs(surface.find_entities_filtered{type="locomotive"}) do
+        -- fdata[loco.force.name].locomotives[loco.unit_number] = loco
+        -- end
         for _, stop in pairs(surface.find_entities_filtered{type="train-stop"}) do
             fdata[stop.force.name].stations[stop.unit_number] = stop
         end
@@ -299,12 +260,11 @@ function Shuttle.init()
     global.shuttles = {}
     global.lost_shuttles = {}
     Force.add_data_all{
-        locomotives = {},
+        --locomotives = {},
         stations = {}
     }
 
     Shuttle.migrate()
-    table.each(game.players, function(v) enable_shuttle_button({player_index=v.index}) end)
 end
 
 return Shuttle
