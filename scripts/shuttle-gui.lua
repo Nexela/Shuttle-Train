@@ -285,7 +285,7 @@ Gui.on_click("shuttle_train_station_button_",
         if event.station and event.station.valid then
             event.element.caption = event.station.backer_name
             event.element.parent.caption = event.station.backer_name
-            game.raise_event(Event.call_shuttle, event)
+            script.raise_event(Event.call_shuttle, event)
         else
             --LOCALE
             --game.print({"st-gui.invalid", event.element.caption})

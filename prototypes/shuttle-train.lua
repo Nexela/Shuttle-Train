@@ -1,4 +1,4 @@
-local Proto = require("stdlib/data/protohelpers")
+local Prototype = require("stdlib/data/prototype")
 --Don't need a train, just equipment! or do we clone the train anyway?
 
 local equipment_category = {
@@ -72,7 +72,7 @@ local shuttle_train = {
     spawn_and_station_height = 0.4,
     charge_approach_distance = 2.6,
 
-    recharging_animation = Proto.empty_animation,
+    recharging_animation = Prototype.empty_animation,
     categories = {"shuttle-train-equipment"}
 }
 
